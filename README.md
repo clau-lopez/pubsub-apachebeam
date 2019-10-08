@@ -17,7 +17,7 @@ export PROJECT_NAME=PROJECT
 ## Run
 ```
 mvn compile exec:java \\
-  -Dexec.mainClass=com.examples.pubsub.streaming.PubSubToGCS \\
+  -Dexec.mainClass=PubSubToGCS \\
   -Dexec.cleanupDaemonThreads=false \\
   -Dexec.args="\\
     --project=$PROJECT_NAME \\
