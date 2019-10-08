@@ -16,14 +16,6 @@ export PROJECT_NAME=PROJECT
 
 ## Run
 ```
-mvn compile exec:java \\
-  -Dexec.mainClass=PubSubToGCS \\
-  -Dexec.cleanupDaemonThreads=false \\
-  -Dexec.args="\\
-    --project=$PROJECT_NAME \\
-    --inputTopic=projects/$PROJECT_NAME/topics/my-topic \\
-    --output=gs://$BUCKET_NAME/apache-beam-example/output \\
-    --runner=DataflowRunner \\
-    --windowSize=2"
+mvn compile exec:java -Dexec.mainClass=PubSubToGCS -Dexec.cleanupDaemonThreads=false -Dexec.args="--project=$PROJECT_NAME --inputTopic=projects/$PROJECT_NAME/topics/my-topic --output=gs://$BUCKET_NAME/output --runner=DataflowRunner --windowSize=2"
 ```
 ##
