@@ -21,7 +21,7 @@ public class TransformationTest {
 
         DoFn.OutputReceiver outputReceiver = mock(DoFn.OutputReceiver.class);
         transformation.processElement(information, outputReceiver);
-        verify(outputReceiver).output(sensorRecordExpected.toString());
+        verify(outputReceiver).output(sensorRecordExpected);
     }
 
     @Test

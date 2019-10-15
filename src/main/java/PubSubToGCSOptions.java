@@ -22,4 +22,18 @@ public interface PubSubToGCSOptions extends PipelineOptions, StreamingOptions {
     String getOutput();
 
     void setOutput(String value);
+
+    @Validation.Required
+    String getProjectId();
+    void setProjectId(String projectId);
+
+    @Validation.Required
+    String getDatasetId();
+    void setDatasetId(String datasetId);
+
+    @Validation.Required
+    String getTableId();
+    void setTableId(String tableId);
+
+
 }

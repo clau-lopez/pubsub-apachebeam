@@ -2,12 +2,12 @@ import org.apache.beam.sdk.transforms.DoFn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Transformation extends DoFn<String, String> {
+public class Transformation extends DoFn<String, SensorRecord> {
     private static final Logger LOG = LoggerFactory.getLogger(Transformation.class);
 
 
     @ProcessElement
-    public void processElement(@Element String information, OutputReceiver<String> out) {
+    public void processElement(@Element String information, OutputReceiver<SensorRecord> out) {
         LOG.info("Information: " + information);
         LOG.debug("Information: " + information);
 
@@ -30,7 +30,7 @@ public class Transformation extends DoFn<String, String> {
             sensorRecord.setBattery(battery);
             sensorRecord.setTimestamp(timestamp);
 
-            out.output(sensorRecord.toString());
+            out.output(sensorRecord);
         }
 
     }
