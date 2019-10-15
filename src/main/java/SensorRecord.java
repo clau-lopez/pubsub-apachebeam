@@ -1,5 +1,3 @@
-
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Setter;
 import lombok.ToString;
