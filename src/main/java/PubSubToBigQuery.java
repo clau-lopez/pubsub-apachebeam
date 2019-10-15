@@ -12,18 +12,13 @@ import org.apache.beam.sdk.transforms.windowing.FixedWindows;
 import org.apache.beam.sdk.transforms.windowing.Window;
 import org.joda.time.Duration;
 
-import java.io.IOException;
+public class PubSubToBigQuery {
+    public static void main(String[] args){
 
-
-public class PubSubToGCS {
-    public static void main(String[] args) throws IOException {
-        // The maximum number of shards when writing output.
-        int numShards = 1;
-
-        PubSubToGCSOptions options = PipelineOptionsFactory
+        PubSubToBigQueryOptions options = PipelineOptionsFactory
                 .fromArgs(args)
                 .withValidation()
-                .as(PubSubToGCSOptions.class);
+                .as(PubSubToBigQueryOptions.class);
 
         options.setStreaming(true);
 
@@ -78,7 +73,7 @@ public class PubSubToGCS {
                 // 2) Group the messages into fixed-sized minute intervals.
                 .apply(Window.into(FixedWindows.of(Duration.standardMinutes(options.getWindowSize()))))
                 .apply("transformation", ParDo.of(new Transformation()))
-                // 3) Write one file to GCS for every window of messages.
+                // 3) Write one file to Big Query for every window of messages.
                 .apply("Write Files to Bigquery", BigQueryIO.<SensorRecord>write()
                         .to(tableSpec)
                         .withSchema(tableSchema)

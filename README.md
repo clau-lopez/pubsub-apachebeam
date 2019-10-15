@@ -18,6 +18,6 @@ export TABLE_ID=TABLE
 
 ## Run
 ```
-mvn compile exec:java -Dexec.mainClass=PubSubToGCS -Dexec.cleanupDaemonThreads=false -Dexec.args="--project=$PROJECT_NAME --inputTopic=projects/$PROJECT_NAME/topics/my-topic --output=gs://$BUCKET_NAME/output --runner=DataflowRunner --windowSize=2 --projectId=$PROJECT_NAME --datasetId=$DATASET_ID --tableId=$TABLE_ID "
+mvn compile exec:java -Dexec.mainClass=PubSubToBigQuery -Dexec.cleanupDaemonThreads=false -Dexec.args="--project=$PROJECT_NAME --inputTopic=projects/$PROJECT_NAME/topics/my-topic --output=gs://$BUCKET_NAME/output --runner=DataflowRunner --windowSize=2 --projectId=$PROJECT_NAME --datasetId=$DATASET_ID --tableId=$TABLE_ID "
 ```
 ##

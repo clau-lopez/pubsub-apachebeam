@@ -4,7 +4,7 @@ import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.StreamingOptions;
 import org.apache.beam.sdk.options.Validation;
 
-public interface PubSubToGCSOptions extends PipelineOptions, StreamingOptions {
+public interface PubSubToBigQueryOptions extends PipelineOptions, StreamingOptions {
     @Description("The Cloud Pub/Sub topic to read from.")
     @Validation.Required
     String getInputTopic();
