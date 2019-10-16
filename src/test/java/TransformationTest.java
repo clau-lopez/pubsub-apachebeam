@@ -1,12 +1,15 @@
 import org.apache.beam.sdk.transforms.DoFn;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import static org.mockito.Mockito.*;
 
+@RunWith(JUnit4.class)
 public class TransformationTest {
 
     @Test
-    void shouldCreateOutputWithTemperature() {
+    public void shouldCreateOutputWithTemperature() {
         Transformation transformation = new Transformation();
 
         String information = "20,25.0,10,5,234:343:675,40,100000000";
@@ -25,7 +28,7 @@ public class TransformationTest {
     }
 
     @Test
-    void shouldNotCreateOutput() {
+    public void shouldNotCreateOutput() {
         Transformation transformation = new Transformation();
 
         String information = "20,25.0,10,5,234:343:675,40";
