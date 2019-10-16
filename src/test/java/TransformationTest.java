@@ -34,8 +34,8 @@ public class TransformationTest {
         DoFn.OutputReceiver outputReceiver = mock(DoFn.OutputReceiver.class);
         transformation.processElement(information, outputReceiver);
         verifyZeroInteractions(outputReceiver);
-
     }
+
 
 
 }

@@ -1,7 +1,4 @@
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.apache.beam.sdk.coders.AvroCoder;
 import org.apache.beam.sdk.coders.DefaultCoder;
 
@@ -10,6 +7,8 @@ import org.apache.beam.sdk.coders.DefaultCoder;
 @EqualsAndHashCode
 @ToString
 @DefaultCoder(AvroCoder.class)
+@AllArgsConstructor
+@NoArgsConstructor
 public class SensorRecord {
 
     private int sunlight;

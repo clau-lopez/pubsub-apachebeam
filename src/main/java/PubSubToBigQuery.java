@@ -74,7 +74,7 @@ public class PubSubToBigQuery {
                 .apply(Window.into(FixedWindows.of(Duration.standardMinutes(options.getWindowSize()))))
                 .apply("transformation", ParDo.of(new Transformation()))
                 // 3) Write one file to Big Query for every window of messages.
-                .apply("Write Files to Bigquery", BigQueryIO.<SensorRecord>write()
+                .apply("Write to Bigquery", BigQueryIO.<SensorRecord>write()
                         .to(tableSpec)
                         .withSchema(tableSchema)
                         .withFormatFunction((SensorRecord sensorRecord) -> new TableRow()
