@@ -3,7 +3,10 @@ import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.testing.TestStream;
 import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.windowing.*;
+import org.apache.beam.sdk.transforms.windowing.BoundedWindow;
+import org.apache.beam.sdk.transforms.windowing.FixedWindows;
+import org.apache.beam.sdk.transforms.windowing.IntervalWindow;
+import org.apache.beam.sdk.transforms.windowing.Window;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.TimestampedValue;
 import org.joda.time.Duration;
@@ -16,13 +19,13 @@ import org.junit.runners.JUnit4;
 import java.io.Serializable;
 
 @RunWith(JUnit4.class)
-public class PipelineTest  implements Serializable {
+public class PipelineTest implements Serializable {
 
-    @Rule public TestPipeline testPipeline = TestPipeline.create();
-
-    private Instant baseTime = new Instant(0);
     private static final Duration WINDOW_DURATION = Duration.standardMinutes(5);
     private static final Duration ALLOWED_LATENESS = Duration.standardMinutes(20);
+    private static final Instant NOW = new Instant(0);
+    @Rule
+    public TestPipeline testPipeline = TestPipeline.create();
 
     @Test
     public void testBasicPipeline() {
@@ -54,7 +57,7 @@ public class PipelineTest  implements Serializable {
 
     @Test
     public void testEmptyResultInPipelineWhenLateData() {
-        BoundedWindow window = new IntervalWindow(baseTime, WINDOW_DURATION);
+        BoundedWindow window = new IntervalWindow(NOW, WINDOW_DURATION);
         TestStream<String> createEvents =
                 TestStream.create(AvroCoder.of(String.class))
                         //.advanceWatermarkTo(baseTime.plus(ALLOWED_LATENESS))
@@ -69,14 +72,41 @@ public class PipelineTest  implements Serializable {
                         .apply(ParDo.of(new Transformation()));
 
 
-        //PAssert.that(records).inWindow(window).empty();
-        PAssert.that(records).inWindow(window).containsInAnyOrder(new SensorRecord(20, 25.0f, 10, 5, "234:343:675", 40, "100000000"));
+        PAssert.that(records).inWindow(window).empty();
 
         testPipeline.run().waitUntilFinish();
     }
 
+    @Test
+    public void shouldShowUnobservablyLateData() {
+        IntervalWindow window = new IntervalWindow(NOW, NOW.plus(Duration.standardSeconds(5)));
+        TestStream<String> createEvents =
+                TestStream.create(AvroCoder.of(String.class))
+                        .addElements(event("20,25.0,10,5,234:343:675,40,100000000", Duration.standardSeconds(1)))
+                        .addElements(event("30,25.0,10,5,234:343:675,40,300000000", Duration.standardSeconds(1)))
+                        .advanceWatermarkToInfinity();
+
+        Duration windowDuration = Duration.standardSeconds(5);
+
+        PCollection<SensorRecord> records =
+                testPipeline
+                        .apply(createEvents)
+                        .apply(Window.into(FixedWindows.of(windowDuration)))
+                        .apply(ParDo.of(new Transformation()));
+
+
+        PAssert.that(records).inWindow(window).containsInAnyOrder(
+                new SensorRecord(20, 25.0f, 10, 5, "234:343:675", 40, "100000000"),
+                new SensorRecord(30, 25.0f, 10, 5, "234:343:675", 40, "300000000"));
+        PAssert.that(records).inLatePane(window).empty();
+       PAssert.that(records).inFinalPane(window).containsInAnyOrder(
+               new SensorRecord(20, 25.0f, 10, 5, "234:343:675", 40, "100000000"),
+               new SensorRecord(30, 25.0f, 10, 5, "234:343:675", 40, "300000000"));
+        testPipeline.run().waitUntilFinish();
+    }
+
     private TimestampedValue<String> event(String record, Duration baseTimeOffset) {
-        return TimestampedValue.of(record, baseTime.plus(baseTimeOffset));
+        return TimestampedValue.of(record, NOW.plus(baseTimeOffset));
     }
 
 }
