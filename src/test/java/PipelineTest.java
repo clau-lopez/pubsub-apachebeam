@@ -78,30 +78,74 @@ public class PipelineTest implements Serializable {
     }
 
     @Test
-    public void shouldShowUnobservablyLateData() {
+    public void shouldShowOnlyTwoElementsInWindowWithLateData() {
         IntervalWindow window = new IntervalWindow(NOW, NOW.plus(Duration.standardSeconds(5)));
         TestStream<String> createEvents =
                 TestStream.create(AvroCoder.of(String.class))
-                        .addElements(event("20,25.0,10,5,234:343:675,40,100000000", Duration.standardSeconds(1)))
-                        .addElements(event("30,25.0,10,5,234:343:675,40,300000000", Duration.standardSeconds(1)))
+
+                        .advanceWatermarkTo(NOW.plus(Duration.standardSeconds(0)))
+
+                        .addElements(
+                                event("20,25.0,10,5,234:343:675,40,100000000", Duration.standardSeconds(1)))
+
+                        .advanceWatermarkTo(NOW.plus(Duration.standardSeconds(9)))
+
+                        .addElements(
+                                event("30,25.0,10,5,234:343:675,40,300000000", Duration.standardSeconds(1)))
+
                         .advanceWatermarkToInfinity();
 
         Duration windowDuration = Duration.standardSeconds(5);
 
+        Window<String> window1 = Window.<String>into(FixedWindows.of(windowDuration)).withAllowedLateness(Duration.standardSeconds(5)).accumulatingFiredPanes();
+
         PCollection<SensorRecord> records =
                 testPipeline
                         .apply(createEvents)
-                        .apply(Window.into(FixedWindows.of(windowDuration)))
+                        .apply(window1)
                         .apply(ParDo.of(new Transformation()));
-
 
         PAssert.that(records).inWindow(window).containsInAnyOrder(
                 new SensorRecord(20, 25.0f, 10, 5, "234:343:675", 40, "100000000"),
-                new SensorRecord(30, 25.0f, 10, 5, "234:343:675", 40, "300000000"));
-        PAssert.that(records).inLatePane(window).empty();
-       PAssert.that(records).inFinalPane(window).containsInAnyOrder(
-               new SensorRecord(20, 25.0f, 10, 5, "234:343:675", 40, "100000000"),
-               new SensorRecord(30, 25.0f, 10, 5, "234:343:675", 40, "300000000"));
+                new SensorRecord(30, 25.0f, 10, 5, "234:343:675", 40, "300000000")
+
+        );
+
+        testPipeline.run().waitUntilFinish();
+    }
+
+    @Test
+    public void shouldShowOnlyOneElementInWindowWithLateData() {
+        IntervalWindow window = new IntervalWindow(NOW, NOW.plus(Duration.standardSeconds(5)));
+        TestStream<String> createEvents =
+                TestStream.create(AvroCoder.of(String.class))
+
+                        .advanceWatermarkTo(NOW.plus(Duration.standardSeconds(0)))
+
+                        .addElements(
+                                event("20,25.0,10,5,234:343:675,40,100000000", Duration.standardSeconds(1)))
+
+                        .advanceWatermarkTo(NOW.plus(Duration.standardSeconds(11)))
+
+                        .addElements(
+                                event("30,25.0,10,5,234:343:675,40,300000000", Duration.standardSeconds(1)))
+
+                        .advanceWatermarkToInfinity();
+
+        Duration windowDuration = Duration.standardSeconds(5);
+
+        Window<String> window1 = Window.<String>into(FixedWindows.of(windowDuration)).withAllowedLateness(Duration.standardSeconds(5)).accumulatingFiredPanes();
+
+        PCollection<SensorRecord> records =
+                testPipeline
+                        .apply(createEvents)
+                        .apply(window1)
+                        .apply(ParDo.of(new Transformation()));
+
+        PAssert.that(records).inWindow(window).containsInAnyOrder(
+                new SensorRecord(20, 25.0f, 10, 5, "234:343:675", 40, "100000000")
+        );
+
         testPipeline.run().waitUntilFinish();
     }
 
