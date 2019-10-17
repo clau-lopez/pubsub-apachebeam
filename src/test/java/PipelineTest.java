@@ -115,7 +115,7 @@ public class PipelineTest implements Serializable {
     }
 
     @Test
-    public void shouldShowOnlyOneElementInWindowWithLateData() {
+    public void shouldHaveAnEmptyWindowWithDataOutOfRange() {
         IntervalWindow window = new IntervalWindow(NOW, NOW.plus(Duration.standardSeconds(5)));
         TestStream<String> createEvents =
                 TestStream.create(AvroCoder.of(String.class))
@@ -123,12 +123,7 @@ public class PipelineTest implements Serializable {
                         .advanceWatermarkTo(NOW.plus(Duration.standardSeconds(0)))
 
                         .addElements(
-                                event("20,25.0,10,5,234:343:675,40,100000000", Duration.standardSeconds(1)))
-
-                        .advanceWatermarkTo(NOW.plus(Duration.standardSeconds(11)))
-
-                        .addElements(
-                                event("30,25.0,10,5,234:343:675,40,300000000", Duration.standardSeconds(1)))
+                                event("20,25.0,10,5,234:343:675,40,100000000", Duration.standardSeconds(13)))
 
                         .advanceWatermarkToInfinity();
 
@@ -142,9 +137,7 @@ public class PipelineTest implements Serializable {
                         .apply(window1)
                         .apply(ParDo.of(new Transformation()));
 
-        PAssert.that(records).inWindow(window).containsInAnyOrder(
-                new SensorRecord(20, 25.0f, 10, 5, "234:343:675", 40, "100000000")
-        );
+        PAssert.that(records).inFinalPane(window).empty();
 
         testPipeline.run().waitUntilFinish();
     }
